@@ -1,0 +1,15 @@
+{
+    "name": "drawing/public",
+    "autoload": {
+        "psr-4": {
+            "app\\": "."
+        }
+    },
+    "authors": [
+        {
+            "name": "ogioldat",
+            "email": "tomasz.ogiolda00@gmail.com"
+        }
+    ],
+    "require": {}
+}
