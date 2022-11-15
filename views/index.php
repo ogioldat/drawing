@@ -1,15 +1,13 @@
-<h2>Wszystkie rysynki</h2>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rysunki</title>
+  <link rel="stylesheet" href="\style">
+</head>
+<body>
 
-<!-- <script>
-    const xhttp = new XMLHttpRequest()
+<h2>Wszystkie dostępne rysynki</h2>
 
-    xhttp.onreadystatechange = function () {
-        console.log(this)
-    }
-    
-    xhttp.open("POST", "/draw", true);
-    xhttp.send();
-</script> -->
 <div>
     <?php 
         foreach($data as $index => $drawing) {
@@ -27,5 +25,5 @@
     <button type="submit">Nowy rysunek</button>
 </form>
 
-
-!!
+</body>
+</html>
