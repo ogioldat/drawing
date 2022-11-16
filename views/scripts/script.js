@@ -144,6 +144,7 @@ window.onload = function () {
 
   clearButton.addEventListener('click', () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    updateDrawing(null)
   });
 
   initMouseEvents(canvas, context)

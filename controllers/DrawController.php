@@ -33,7 +33,7 @@ class DrawController extends Controller {
     
     public function createDrawing(Request $request, Response $response) {
         $drawing_id = uniqid();
-        $path = "draw/" . $drawing_id;
+        $path = "/draw/" . $drawing_id;
 
         $this->drawService->createDrawing($drawing_id);
 
@@ -45,13 +45,13 @@ class DrawController extends Controller {
         $body = $request->getBody();
         $canvas = $body["base64Canvas"];
 
-        if ($drawing_id == false || $canvas == false) {
-            throw new Exception(400, 'Bad request');
+        if ($drawing_id == "" ) {
+            throw new Exception('Bad request', 400);
         }
 
         $currentDrawing = $this->drawService->findDrawingById($drawing_id);
         if ($currentDrawing === false) {
-            throw new Exception(404, 'Not found');
+            throw new Exception('Not found', 404);
         }
         $data = new DrawingModel($drawing_id, $canvas);
 
