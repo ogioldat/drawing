@@ -15,12 +15,12 @@ class DrawController extends Controller {
         $this->drawService = new DrawService();
     }
 
-    public function home() {
+    public function viewHome() {
         $drawings = $this->drawService->getAllDrawings();
         return $this->render('index', ['data' => $drawings]);
     }
 
-    public function getDrawingById(Request $request) {
+    public function viewDrawingPanel(Request $request) {
         $drawing_id = $request->getRouteParam('id');
         $drawing = $this->drawService->findDrawingById($drawing_id);
 
@@ -56,5 +56,18 @@ class DrawController extends Controller {
         $data = new DrawingModel($drawing_id, $canvas);
 
         $this->drawService->updateDrawing($data);
+    }
+
+    public function getDrawingById(Request $request) {
+        $drawing_id = $request->getRouteParam('id');
+        $drawing = $this->drawService->findDrawingById($drawing_id);
+
+        if ($drawing === null) {
+            throw new Exception('Not found', 404);
+        }
+
+        header("Content-Type: application/json");
+
+        return json_encode($drawing);
     }
 }

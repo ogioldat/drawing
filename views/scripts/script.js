@@ -1,135 +1,151 @@
-const canvas = document.getElementById('my-canvas');
-const context = canvas.getContext("2d");
-const boundings = canvas.getBoundingClientRect();
+let x = 0;
+let y = 0;
+let isDrawing = false;
 
-var mouseX = 0;
-var mouseY = 0;
+function setMouseCoordinates(event) {
+  x = event.clientX
+  y = event.clientY
+}
 
-context.strokeStyle = 'black';
-context.lineWidth = 1;
-var isDrawing = false;
+function setTouchCoordinates(event, canvas) {
+  const boundings = canvas.getBoundingClientRect();
+  x = event.changedTouches[0].pageX - boundings.left;;
+  y = event.changedTouches[0].pageY - boundings.top;
+}
 
-canvas.width = window.innerWidth * 0.9;
-canvas.height = window.innerHeight * 0.7;
+function getIdFromUrl() {
+  const pattern = new URLPattern('/draw/:id', window.location.origin)
+  const { id } = pattern.exec(window.location.href).pathname.groups
 
+  return id
+}
 
-window.onload = function(){
+function updateDrawing(base64Canvas) {
+  const id = getIdFromUrl()
+  console.log('sending request', { id })
+  const xhttp = new XMLHttpRequest();
 
-
-var colors = document.getElementsByClassName('colors')[0];
-  
-colors.addEventListener('click', function(event) {
-  console.log(event.target.value);
-  context.strokeStyle = event.target.value || 'black';
-});
-
-
-var brushes = document.getElementsByClassName('brushes')[0];
-  
-brushes.addEventListener('click', function(event) {
-  console.log(event.target.value);
-  context.lineWidth = event.target.value || 1;
-});
-
-
-
-var colors = document.getElementsByClassName('colors')[0];
-  
-colors.addEventListener('click', function(event) {
-  context.strokeStyle = event.target.value || 'black';
-});
-
-
-var brushes = document.getElementsByClassName('brushes')[0];
-
-brushes.addEventListener('click', function(event) {
-  context.lineWidth = event.target.value || 1;
-});
-
-
-
-
-canvas.addEventListener('mousedown', function(event) {
-  setMouseCoordinates(event);
-  isDrawing = true;
-
-
-  context.beginPath();
-  context.moveTo(mouseX, mouseY);
-});
-
-canvas.addEventListener('touchstart', function(event) {
-  setTouchCoordinates(event);
-  isDrawing = true;
-
-
-  context.beginPath();
-  context.moveTo(mouseX, mouseY);
-});
-
-canvas.addEventListener('mousemove', function(event) {
-  setMouseCoordinates(event);
-
-  if(isDrawing){
-    context.lineTo(mouseX, mouseY);
-    context.stroke();
-  }
-});
-
-canvas.addEventListener('touchmove', function(event) {
-  setTouchCoordinates(event);
-
-  if(isDrawing){
-    context.lineTo(mouseX, mouseY);
-    context.stroke();
-  }
-});
-
-
-canvas.addEventListener('mouseup', function(event) {
-  setMouseCoordinates(event);
-  isDrawing = false;
-});
-
-canvas.addEventListener('touchend', function(event) {
-  setTouchCoordinates(event);
-  isDrawing = false;
-   updateDrawing( )
-});
-
-const xhttp = new XMLHttpRequest()
-
-function updateDrawing(id) {
-  console.log('sending request', {id})
-  xhttp.open("PUT", `/draw/${id}`, true);
+  xhttp.open("PUT", `/api/draw/${id}`, true);
   xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
   const payload = {
-      base64Canvas: canvas.toDataURL().toString()
+    base64Canvas
   }
   xhttp.send(JSON.stringify(payload));
 }
 
+function onCanvasDataLoad(callback) {
+  const id = getIdFromUrl()
+  console.log('sending request', { id })
+  const xhttp = new XMLHttpRequest();
 
+  xhttp.onreadystatechange = () => {
+    if (xhttp.readyState === 4) {
+      const {base64Canvas} = JSON.parse(xhttp.response)
+      callback(base64Canvas);
+    }
+  }
 
-// Handle Mouse Coordinates
-function setMouseCoordinates(event) {
-  mouseX = event.clientX 
-  mouseY = event.clientY
+  xhttp.open("GET", `/api/draw/${id}`, true);
+  xhttp.send();
 }
 
-function setTouchCoordinates(event) {
-
-    mouseX = event.changedTouches[0].pageX - boundings.left;;
-    mouseY = event.changedTouches[0].pageY- boundings.top;
-
+function injectBase64ImageToCanvas(context, base64Canvas) {
+  const image = new Image();
+  image.onload = function() {
+    context.drawImage(image, 0, 0);
+  };
+  image.src = base64Canvas
 }
 
-// Handle Clear Button
-var clearButton = document.getElementById('clear');
+function initMouseEvents(canvas, context) {
+  canvas.addEventListener('mousedown', (event) => {
+    console.log('drawing')
 
-clearButton.addEventListener('click', function() {
-  context.clearRect(0, 0, canvas.width, canvas.height);
-});
+    setMouseCoordinates(event);
+    isDrawing = true;
 
+    context.beginPath();
+    context.moveTo(x, y);
+  });
+
+  canvas.addEventListener('mouseup', (event) => {
+    console.log('should update data')
+    // const base64Canvas = context.getImageData(10, 20, 80, 230)
+    const base64Canvas = canvas.toDataURL()
+    // context.drawImage(base64Canvas, 0, 0)
+    updateDrawing(base64Canvas)
+    // context.putImageData(imgData, 0, 0)
+
+    setMouseCoordinates(event);
+    isDrawing = false;
+  });
+
+  canvas.addEventListener('mousemove', (event) => {
+    setMouseCoordinates(event);
+
+    if (isDrawing) {
+      context.lineTo(x, y);
+      context.stroke();
+    }
+  });
+}
+
+function initTouchEvents(canvas, context) {
+  canvas.addEventListener('touchstart', (event) => {
+    setTouchCoordinates(event, canvas);
+    isDrawing = true;
+
+    context.beginPath();
+    context.moveTo(x, y);
+  });
+
+  canvas.addEventListener('touchend', (event) => {
+    setTouchCoordinates(event, canvas);
+    isDrawing = false;
+    updateDrawing()
+  });
+
+  canvas.addEventListener('touchmove', (event) => {
+    setTouchCoordinates(event, canvas);
+
+    if (isDrawing) {
+      context.lineTo(x, y);
+      context.stroke();
+    }
+  });
+}
+
+window.onload = function () {
+  const canvas = document.getElementById('my-canvas');
+  const context = canvas.getContext("2d", { willReadFrequently:true });
+
+  onCanvasDataLoad(
+    (base64Image) => injectBase64ImageToCanvas(context, base64Image)
+  )
+  
+  context.strokeStyle = 'black';
+  context.lineWidth = 1;
+
+  canvas.width = window.innerWidth * 0.9;
+  canvas.height = window.innerHeight * 0.7;
+
+  const colors = document.getElementById('colors');
+  const brushes = document.getElementById('brushes');
+  const clearButton = document.getElementById('clear');
+
+  colors.addEventListener('click', (event) => {
+    context.strokeStyle = event.target.value || 'black';
+  });
+
+  brushes.addEventListener('click', (event) => {
+    context.lineWidth = event.target.value || 1;
+  });
+
+  clearButton.addEventListener('click', () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  initMouseEvents(canvas, context)
+  initTouchEvents(canvas, context)
 }

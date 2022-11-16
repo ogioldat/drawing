@@ -11,7 +11,7 @@
 		</div>";
         }
     ?> </div>
-  <form action="draw" method="POST">
+  <form action="api/draw" method="POST">
     <button type="submit">Nowy rysunek</button>
   </form>
 </div>
