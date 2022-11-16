@@ -30,4 +30,9 @@ class DrawService {
         $data = new DrawingModel($drawing_id, null);
         $this->dataStore->save($data);
     }
+
+    public function updateDrawing(DrawingModel $drawing) {        
+        $this->dataStore->remove($drawing->id);
+        $this->dataStore->save($drawing);
+    }
 }

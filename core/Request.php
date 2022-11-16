@@ -21,14 +21,16 @@ class Request
         return $path;
     }
 
-    public function isGet()
-    {
+    public function isGet() {
         return $this->getMethod() === 'get';
     }
 
-    public function isPost()
-    {
+    public function isPost() {
         return $this->getMethod() === 'post';
+    }
+
+    public function isPut() {
+        return $this->getMethod() === 'put';
     }
 
     public function getBody()
@@ -43,6 +45,10 @@ class Request
             foreach ($_POST as $key) {
                 $data[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
             }
+        }
+        if ($this->isPut()) {
+            $body = json_decode(file_get_contents('php://input'), true);
+            $data = $body;
         }
         return $data;
     }

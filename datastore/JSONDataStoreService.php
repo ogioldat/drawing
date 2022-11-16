@@ -38,9 +38,23 @@ class JSONDataStoreService implements IDataStore {
         $json = json_encode($drawings);
 
         if (file_put_contents($this->DATA_FILE, $json)) {
-            echo "JSON file created successfully...";
             return;
         } 
         echo "Oops! Error creating json file...";
+    }
+
+    public function remove(string $id): void {
+        $drawings = $this->read();
+        file_put_contents($this->DATA_FILE, json_encode([]));
+
+        $drawingsWithoutRemoved = [];
+
+        foreach ($drawings as $index => $storedDrawing) {
+            if ($storedDrawing->id !== $id) {
+                array_push($drawingsWithoutRemoved, $storedDrawing);
+            }
+        }
+        $json = json_encode($drawingsWithoutRemoved);
+        file_put_contents($this->DATA_FILE, $json);
     }
 }
