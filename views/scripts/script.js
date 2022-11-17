@@ -71,12 +71,8 @@ function initMouseEvents(canvas, context) {
 
   canvas.addEventListener('mouseup', (event) => {
     console.log('should update data')
-    // const base64Canvas = context.getImageData(10, 20, 80, 230)
     const base64Canvas = canvas.toDataURL()
-    // context.drawImage(base64Canvas, 0, 0)
     updateDrawing(base64Canvas)
-    // context.putImageData(imgData, 0, 0)
-
     setMouseCoordinates(event);
     isDrawing = false;
   });
@@ -102,8 +98,10 @@ function initTouchEvents(canvas, context) {
 
   canvas.addEventListener('touchend', (event) => {
     setTouchCoordinates(event, canvas);
+    const base64Canvas = canvas.toDataURL()
+    updateDrawing(base64Canvas)
+    setMouseCoordinates(event);
     isDrawing = false;
-    updateDrawing()
   });
 
   canvas.addEventListener('touchmove', (event) => {
@@ -124,11 +122,13 @@ window.onload = function () {
     (base64Image) => injectBase64ImageToCanvas(context, base64Image)
   )
   
+  var t= setInterval(onCanvasDataLoad((base64Image) => injectBase64ImageToCanvas(context, base64Image)),1000);
+  
   context.strokeStyle = 'black';
   context.lineWidth = 1;
 
-  canvas.width = window.innerWidth * 0.9;
-  canvas.height = window.innerHeight * 0.7;
+  canvas.width = window.innerWidth * 0.95;
+  canvas.height = window.innerHeight * 0.65;
 
   const colors = document.getElementById('colors');
   const brushes = document.getElementById('brushes');
@@ -149,4 +149,7 @@ window.onload = function () {
 
   initMouseEvents(canvas, context)
   initTouchEvents(canvas, context)
+
+
+
 }
